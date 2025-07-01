@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Supermarket Receipt Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa, #e4e7eb);
+            padding: 20px;
+            color: var(--dark-color);
+            min-height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1600px;
+            margin: 0 auto;
+            gap: 30px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+            border-radius: 15px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .control-panel {
+            flex: 1;
+            background: white;
+            padding: 25px;
+            max-width: 600px;
+            border-right: 1px solid #eee;
+            overflow-y: auto;
+            max-height: 95vh;
+        }
+        
+        .preview-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px;
+            background: #f9fafc;
+        }
+        
+        .panel-title {
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--secondary-color);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .panel-title i {
+            margin-right: 10px;
+            color: var(--secondary-color);
+        }
+        
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #444;
+        }
+        
+        input, select, textarea, button {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-group button {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .btn-download {
+            background-color: var(--success-color);
+        }
+        
+        .btn-print {
+            background-color: var(--warning-color);
+        }
+        
+        .btn-update {
+            background-color: var(--primary-color);
+        }
+        
+        .btn-random {
+            background-color: #9b59b6;
+        }
+        
+        .btn-random-all {
+            background-color: #e67e22;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            padding: 14px;
+        }
+        
+        .error {
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .receipt-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            min-width: 300px;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .receipt {
+            width: 300px;
+            background: white;
+            padding: 25px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.08);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            transition: all 0.3s ease;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #ccc;
+        }
+        
+        .store-logo {
+            max-width: 100px;
+            max-height: 60px;
+            margin: 0 auto 12px;
+            display: block;
+        }
+        
+        .store-name {
+            font-weight: bold;
+            font-size: 19px;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        
+        .store-address {
+            font-size: 12px;
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+        
+        .gstin {
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+        
+        .receipt-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            font-size: 12px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+        }
+        
+        .items-table th {
+            text-align: left;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #ccc;
+            font-size: 13px;
+        }
+        
+        .items-table td {
+            padding: 4px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 13px;
+        }
+        
+        .items-table .align-right {
+            text-align: right;
+        }
+        
+        .tax-details {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #ccc;
+            font-size: 12px;
+        }
+        
+        .total-amount {
+            font-weight: bold;
+            font-size: 19px;
+            text-align: right;
+            margin: 18px 0;
+            padding-top: 12px;
+            border-top: 2px solid #000;
+        }
+        
+        .payment-details {
+            font-size: 13px;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+        
+        .payment-success {
+            color: #27ae60;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .barcode-container {
+            margin-top: 25px;
+            text-align: left;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .barcode {
+            height: 25px;
+            margin-bottom: 5px;
+            transform: scale(0.85);
+            transform-origin: left center;
+        }
+        
+        .thank-you {
+            text-align: center;
+            margin-top: 18px;
+            font-style: italic;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .printer-selection {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .printer-btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: #f1f1f1;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .printer-btn:hover {
+            background: #e3f2fd;
+        }
+        
+        .printer-btn.active {
+            border-color: var(--secondary-color);
+            background: #e3f2fd;
+        }
+        
+        .section {
+            background: #f9f9f9;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 18px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--secondary-color);
+        }
+        
+        .random-options {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .random-options input {
+            flex: 1;
+        }
+        
+        .receipt-number {
+            font-weight: bold;
+            text-align: center;
+            margin: 12px 0;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .logo-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .logo-actions button {
+            margin-top: 0;
+            padding: 10px;
+        }
+        
+        .items-editor {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+        }
+        
+        .item-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .item-row input {
+            padding: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .item-name {
+            flex: 4;
+            min-width: 150px;
+        }
+        
+        .item-qty {
+            flex: 1;
+            max-width: 70px;
+        }
+        
+        .item-price {
+            flex: 1;
+            max-width: 100px;
+        }
+        
+        .item-total {
+            flex: 1;
+            max-width: 100px;
+            text-align: right;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        
+        .item-actions {
+            flex: 0.5;
+            max-width: 40px;
+        }
+        
+        .delete-item {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .delete-item:hover {
+            background: #c0392b;
+        }
+        
+        .add-item-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+        
+        .add-item-btn:hover {
+            background: #219653;
+        }
+        
+        .barcode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .editor-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .control-panel {
+                max-width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .preview-panel {
+                padding: 20px 10px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <h1 class="panel-title"><i class="fas fa-shopping-cart"></i> Indian Supermarket Receipt Generator</h1>
+            
+            <button class="btn-random btn-random-all" onclick="randomizeAll()">
+                <i class="fas fa-random"></i> Randomize All Information
+            </button>
+            
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-store"></i> Store Information</h2>
+                <div class="form-group">
+                    <label for="storeName">Store Name</label>
+                    <input type="text" id="storeName" placeholder="Enter store name">
+                    <button class="btn-random" onclick="randomStoreName()">
+                        <i class="fas fa-dice"></i> Random Store Name
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="storeCity">City</label>
+                    <select id="storeCity">
+                        <option value="Pune">Pune</option>
+                        <option value="Ahmedabad">Ahmedabad</option>
+                        <option value="Gurgaon">Gurgaon</option>
+                        <option value="Mumbai">Mumbai</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="storeAddress">Address</label>
+                    <textarea id="storeAddress" rows="3" placeholder="Store address"></textarea>
+                    <button class="btn-random" onclick="randomAddress()">
+                        <i class="fas fa-dice"></i> Random Address
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gstin">GSTIN</label>
+                    <div class="form-row">
+                        <input type="text" id="gstin" placeholder="GSTIN number">
+                        <button class="btn-random" onclick="randomGSTIN()">
+                            <i class="fas fa-dice"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Store Logo</label>
+                    <input type="file" id="logoUpload" accept="image/*">
+                    <div class="logo-actions">
+                        <button class="btn-random" onclick="randomLogo()">
+                            <i class="fas fa-dice"></i> Random Logo
+                        </button>
+                        <button onclick="removeLogo()">
+                            <i class="fas fa-times"></i> Remove Logo
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-receipt"></i> Receipt Details</h2>
+                <div class="form-group">
+                    <label for="receiptNumber">Receipt Number</label>
+                    <input type="text" id="receiptNumber" placeholder="Receipt number">
+                    <button class="btn-random" onclick="randomReceiptNumber()">
+                        <i class="fas fa-dice"></i> Generate Random
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="transactionDate">Transaction Date & Time</label>
+                    <input type="datetime-local" id="transactionDate">
+                    <button class="btn-random" onclick="randomRecentTime()">
+                        <i class="fas fa-dice"></i> Random Recent Time
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cashierName">Cashier Name</label>
+                    <input type="text" id="cashierName" placeholder="Cashier name">
+                    <button class="btn-random" onclick="randomCashierName()">
+                        <i class="fas fa-dice"></i> Random Cashier
+                    </button>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-percent"></i> Tax Rates</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cgstRate">CGST Rate (%)</label>
+                        <input type="number" id="cgstRate" value="9" min="0" max="30" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sgstRate">SGST Rate (%)</label>
+                        <input type="number" id="sgstRate" value="9" min="0" max="30" step="0.1">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-shopping-basket"></i> Items & Pricing</h2>
+                <div class="form-group">
+                    <label>Generate Random Items</label>
+                    <div class="random-options">
+                        <input type="number" id="foodItems" placeholder="Food Items" min="0" value="2">
+                        <input type="number" id="drinkItems" placeholder="Drink Items" min="0" value="1">
+                        <input type="number" id="snackItems" placeholder="Snack Items" min="0" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="targetAmount">Target Total (₹)</label>
+                        <input type="number" id="targetAmount" placeholder="Target amount" value="500">
+                    </div>
+                    <button class="btn-random" onclick="generateRandomItems()">
+                        <i class="fas fa-dice"></i> Generate Items
+                    </button>
+                </div>
+                
+                <div class="items-editor">
+                    <div class="editor-header">
+                        <div class="editor-title">Edit Items</div>
+                        <div class="subtotal-display">Subtotal: ₹<span id="subtotalAmount">0.00</span></div>
+                    </div>
+                    <div id="itemsEditorContainer">
+                        <!-- Item rows will be added here -->
+                    </div>
+                    <button class="add-item-btn" onclick="addNewItem()">
+                        <i class="fas fa-plus"></i> Add New Item
+                    </button>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-credit-card"></i> Payment Method</h2>
+                <div class="form-group">
+                    <label>Payment Type</label>
+                    <div>
+                        <input type="radio" id="cash" name="paymentType" value="cash">
+                        <label for="cash" style="display:inline">Cash</label>
+                        
+                        <input type="radio" id="credit" name="paymentType" value="credit" checked style="margin-left:20px">
+                        <label for="credit" style="display:inline">Credit Card</label>
+                    </div>
+                </div>
+                
+                <div id="cashPayment" style="display:none">
+                    <div class="form-group">
+                        <label for="cashAmount">Cash Received (₹)</label>
+                        <input type="number" id="cashAmount" placeholder="Amount received">
+                        <div id="cashError" class="error">Change amount is negative!</div>
+                    </div>
+                </div>
+                
+                <div id="cardPayment">
+                    <div class="form-group">
+                        <label for="cardNumber">Card Last 4 Digits</label>
+                        <input type="text" id="cardNumber" maxlength="4" value="3357">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-print"></i> Printer Settings</h2>
+                <div class="printer-selection">
+                    <div class="printer-btn active" data-size="58mm">58mm Printer</div>
+                    <div class="printer-btn" data-size="80mm">80mm Printer</div>
+                </div>
+                
+                <div class="barcode-toggle">
+                    <input type="checkbox" id="barcodeToggle" checked>
+                    <label for="barcodeToggle">Show Barcode</label>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn-update" onclick="updateReceipt()">
+                    <i class="fas fa-sync"></i> Update Receipt
+                </button>
+                <button class="btn-download" onclick="downloadPDF()">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn-download" onclick="downloadJPG()">
+                    <i class="fas fa-file-image"></i> JPG
+                </button>
+                <button class="btn-download" onclick="downloadPNG()">
+                    <i class="fas fa-image"></i> PNG
+                </button>
+                <button class="btn-print" onclick="printReceipt()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </div>
+        
+        <div class="preview-panel">
+            <h2 class="panel-title"><i class="fas fa-eye"></i> Receipt Preview</h2>
+            <div class="receipt-container">
+                <div class="receipt" id="receipt">
+                    <div class="receipt-header">
+                        <img id="storeLogo" class="store-logo" src="" alt="Store Logo">
+                        <div id="storeNameDisplay" class="store-name">Mumbai Super Mart</div>
+                        <div id="storeAddressDisplay" class="store-address">Shop No. 12, Laxmi Road, Pune, Maharashtra 411002</div>
+                        <div id="gstinDisplay" class="gstin">GSTIN: 27ABCDE1234F1Z5</div>
+                    </div>
+                    
+                    <div class="receipt-info">
+                        <div>Receipt: <span id="receiptNumberDisplay">RCT-2023-8765</span></div>
+                        <div>Date: <span id="transactionDateDisplay">12 Oct 2023, 14:35</span></div>
+                    </div>
+                    
+                    <div class="receipt-info">
+                        <div>Cashier: <span id="cashierNameDisplay">Rajesh Kumar</span></div>
+                    </div>
+                    
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th class="align-right">Price</th>
+                                <th class="align-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsList">
+                            <tr>
+                                <td>Britannia Marie Gold Biscuits</td>
+                                <td>1</td>
+                                <td class="align-right">₹30.00</td>
+                                <td class="align-right">₹30.00</td>
+                            </tr>
+                            <tr>
+                                <td>Parle-G Glucose Biscuits</td>
+                                <td>1</td>
+                                <td class="align-right">₹10.00</td>
+                                <td class="align-right">₹10.00</td>
+                            </tr>
+                            <tr>
+                                <td>Coca-Cola 750ml</td>
+                                <td>1</td>
+                                <td class="align-right">₹45.00</td>
+                                <td class="align-right">₹45.00</td>
+                            </tr>
+                            <tr>
+                                <td>Maggi Noodles 70g</td>
+                                <td>1</td>
+                                <td class="align-right">₹12.00</td>
+                                <td class="align-right">₹12.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="tax-details">
+                        <div>CGST (9%): ₹<span id="cgstAmount">40.50</span></div>
+                        <div>SGST (9%): ₹<span id="sgstAmount">40.50</span></div>
+                    </div>
+                    
+                    <div class="total-amount">Total: ₹<span id="totalAmount">500.00</span></div>
+                    
+                    <div class="payment-details">
+                        Payment Method: <span id="paymentMethod">Credit Card</span><br>
+                        <span id="paymentDetails">Card Ending: ****3357</span>
+                        <div class="payment-success">Payment Successful</div>
+                    </div>
+                    
+                    <div class="barcode-container" id="barcodeContainer">
+                        <svg id="barcode" class="barcode"></svg>
+                    </div>
+                    
+                    <div class="thank-you">
+                        Thank you for shopping with us!<br>
+                        Please visit again
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store data arrays
+        const cities = ["Pune", "Ahmedabad", "Gurgaon", "Mumbai"];
+        const storeNames = {
+            Pune: [
+                "Pune Super Mart", "Maharashtra Grocers", "Laxmi Provision Store", 
+                "Shivaji Market", "Sai Supermarket", "Kothrud Grocery", 
+                "Deccan Food Mall", "Prabhat Grocers", "MG Road Superstore", 
+                "Bibwewadi Market", "FC Road Supermart", "Aundh Grocery Center", 
+                "Baner Food Bazaar", "Wakad Superstore", "Koregaon Park Mart",
+                "Shivaji Nagar Market", "Viman Nagar Grocers", "Kharadi Supermarket",
+                "Hinjewadi Food Center", "Pimpri Grocery Hub"
+            ],
+            Ahmedabad: [
+                "Ahmedabad Grocery Hub", "Gujarat Super Mart", "Sabarmati Market", 
+                "Law Garden Grocers", "Manek Chowk Superstore", "Sarkhej Food Mall", 
+                "Vastrapur Supermarket", "Navrangpura Grocers", "Gota Food Bazaar", 
+                "Chandkheda Market", "Bopal Grocery", "Naranpura Supermart", 
+                "Thaltej Grocery Center", "Satellite Market", "Ambawadi Superstore",
+                "Memnagar Food Mart", "Ghatlodia Grocers", "Bodakdev Supermarket",
+                "Prahlad Nagar Grocery", "Science City Food Center"
+            ],
+            Gurgaon: [
+                "Gurgaon Super Mart", "Haryana Grocers", "Sector 14 Market", 
+                "MG Road Superstore", "Sohna Road Food Mall", "Sector 23 Grocery", 
+                "DLF Phase Supermarket", "Cyber City Mart", "Sector 45 Grocers", 
+                "Sushant Lok Food Bazaar", "Palam Vihar Market", "Sector 56 Supermart", 
+                "South City Grocery", "Sector 47 Food Center", "Udyog Vihar Market",
+                "Sector 31 Superstore", "Sector 40 Grocers", "Sector 52 Supermarket",
+                "Galleria Market", "Sector 86 Grocery Hub"
+            ],
+            Mumbai: [
+                "Mumbai Super Mart", "Maharashtra Grocers", "Colaba Market", 
+                "Bandra Superstore", "Andheri Food Mall", "Dadar Grocery", 
+                "Borivali Supermarket", "Churchgate Mart", "Juhu Grocers", 
+                "Powai Food Bazaar", "Malad Market", "Goregaon Supermart", 
+                "Thane Grocery Center", "Vashi Market", "Kandivali Superstore",
+                "Chembur Grocers", "Santacruz Supermarket", "Lower Parel Food Center",
+                "Worli Market", "Navi Mumbai Grocery Hub"
+            ]
+        };
+        
+        const streetNames = [
+            "MG Road", "Laxmi Road", "Station Road", "Gandhi Road", "Nehru Street",
+            "Market Road", "Main Street", "Park Street", "Church Road", "Temple Street",
+            "School Lane", "College Road", "Hospital Road", "Bus Stand Road", "Railway Station Road"
+        ];
+        
+        const foodItems = [
+            {name: "Britannia Marie Gold Biscuits", price: 30},
+            {name: "Parle-G Glucose Biscuits", price: 10},
+            {name: "Sunfeast Dark Fantasy", price: 110},
+            {name: "Unibic Cookies Choco Chip", price: 95},
+            {name: "Oreo Chocolate Sandwich", price: 35},
+            {name: "Good Day Butter Cookies", price: 25},
+            {name: "Hide & Seek Chocolate", price: 40},
+            {name: "Bourbon Chocolate Cream", price: 20},
+            {name: "Tiger Krunch Cream Biscuits", price: 30},
+            {name: "Jim Jam Orange Cream", price: 45},
+            {name: "NutriChoice Digestive", price: 80},
+            {name: "McVitie's Digestive", price: 90},
+            {name: "Anmol Special Cream", price: 25},
+            {name: "Priyagold Butter Bite", price: 35},
+            {name: "Cremica Sandwich Biscuits", price: 50},
+            {name: "Dukes Wafers", price: 20},
+            {name: "Krackjack Crispy Biscuits", price: 25},
+            {name: "50-50 Maska Chaska", price: 30},
+            {name: "Coconut Crunch Biscuits", price: 40},
+            {name: "Monaco Classic Salted", price: 20},
+            {name: "Treat Cream Biscuits", price: 25},
+            {name: "Milk Bikis Biscuits", price: 15},
+            {name: "Sunfeast Nice Biscuits", price: 20},
+            {name: "Horlicks Biscuits", price: 45},
+            {name: "Bournvita Biscuits", price: 50},
+            {name: "Moms Magic Cashew Cookies", price: 65},
+            {name: "Cookieman Choco Cookies", price: 85},
+            {name: "Bisk Farm Cookies", price: 75},
+            {name: "Britannia NutriChoice", price: 95},
+            {name: "McVitie's Hobnobs", price: 120}
+        ];
+        
+        const drinkItems = [
+            {name: "Coca-Cola 750ml", price: 45},
+            {name: "Pepsi 750ml", price: 40},
+            {name: "Thums Up 750ml", price: 45},
+            {name: "Sprite 750ml", price: 40},
+            {name: "Fanta 750ml", price: 40},
+            {name: "Maaza Mango 1L", price: 60},
+            {name: "Slice Mango 1L", price: 55},
+            {name: "Appy Fizz 750ml", price: 65},
+            {name: "7UP 750ml", price: 40},
+            {name: "Mirinda Orange 750ml", price: 40},
+            {name: "Mountain Dew 750ml", price: 45},
+            {name: "Limca 750ml", price: 40},
+            {name: "Red Bull Energy Drink", price: 115},
+            {name: "Monster Energy Drink", price: 125},
+            {name: "Paper Boat Aamras", price: 35},
+            {name: "Real Fruit Juice 1L", price: 110},
+            {name: "Tropicana Juice 1L", price: 180},
+            {name: "B Natural Juice 1L", price: 130},
+            {name: "Minute Maid Pulpy 1L", price: 95},
+            {name: "Bisleri Water 1L", price: 20},
+            {name: "Kinley Water 1L", price: 20},
+            {name: "Aquafina Water 1L", price: 20},
+            {name: "Nescafe Coffee 200g", price: 150},
+            {name: "Bru Coffee 200g", price: 140},
+            {name: "Tata Tea Gold 500g", price: 240},
+            {name: "Red Label Tea 500g", price: 220},
+            {name: "Taj Mahal Tea 500g", price: 280},
+            {name: "Lipton Green Tea", price: 160},
+            {name: "Amul Lassi 200ml", price: 25},
+            {name: "Mother Dairy Lassi", price: 30}
+        ];
+        
+        const snackItems = [
+            {name: "Maggi Noodles 70g", price: 12},
+            {name: "Top Ramen Noodles", price: 15},
+            {name: "Yippee Noodles", price: 14},
+            {name: "Lays Potato Chips", price: 20},
+            {name: "Kurkure Masala Munch", price: 20},
+            {name: "Bingo Mad Angles", price: 20},
+            {name: "Uncle Chipps", price: 20},
+            {name: "Parle Monaco Classic", price: 10},
+            {name: "Haldiram's Aloo Bhujia", price: 45},
+            {name: "Haldiram's Namkeen", price: 50},
+            {name: "Bikaji Bhujia", price: 40},
+            {name: "Balaji Wafers", price: 20},
+            {name: "Cornitos Nacho Chips", price: 35},
+            {name: "Pringles Original", price: 120},
+            {name: "Doritos Nacho Chips", price: 50},
+            {name: "Brittania NutriChoice", price: 30},
+            {name: "Sunfeast Yippee Magic", price: 15},
+            {name: "Wai Wai Noodles", price: 10},
+            {name: "Ching's Secret Noodles", price: 16},
+            {name: "Knorr Soupy Noodles", price: 25},
+            {name: "MTR Ready to Eat", price: 75},
+            {name: "Haldiram's Ready Mix", price: 65},
+            {name: "Bikaji Rasgulla", price: 85},
+            {name: "Haldiram's Gulab Jamun", price: 90},
+            {name: "MTR Gulab Jamun Mix", price: 55},
+            {name: "MTR Idli Mix", price: 60},
+            {name: "MTR Dosa Mix", price: 65},
+            {name: "Priya Pickles", price: 95},
+            {name: "Mother's Recipe Pickle", price: 85},
+            {name: "Catch Spices", price: 45}
+        ];
+        
+        const cashierNames = [
+            "Rajesh Kumar", "Priya Sharma", "Amit Patel", "Sneha Singh", 
+            "Vikram Desai", "Anjali Gupta", "Sanjay Mehta", "Neha Joshi", 
+            "Rahul Shah", "Divya Reddy", "Karan Malhotra", "Pooja Iyer", 
+            "Arjun Choudhury", "Deepika Nair", "Rohit Verma", "Meera Kapoor",
+            "Nikhil Tiwari", "Sunita Mishra", "Vivek Agarwal", "Shilpa Rao"
+        ];
+        
+        // Global items array
+        let itemsData = [];
+        
+        // Initialize the receipt
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date and time
+            const now = new Date();
+            document.getElementById('transactionDate').value = formatDateTimeLocal(now);
+            
+            // Generate initial random values
+            randomStoreName();
+            randomAddress();
+            randomReceiptNumber();
+            randomCashierName();
+            randomGSTIN();
+            
+            // Generate initial items
+            generateRandomItems();
+            
+            // Set payment type listener
+            document.querySelectorAll('input[name="paymentType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if(this.value === 'cash') {
+                        document.getElementById('cashPayment').style.display = 'block';
+                        document.getElementById('cardPayment').style.display = 'none';
+                    } else {
+                        document.getElementById('cashPayment').style.display = 'none';
+                        document.getElementById('cardPayment').style.display = 'block';
+                    }
+                    updateReceipt();
+                });
+            });
+            
+            // Printer size selection
+            document.querySelectorAll('.printer-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.printer-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const size = this.getAttribute('data-size');
+                    document.getElementById('receipt').style.width = size === '58mm' ? '300px' : '350px';
+                });
+            });
+            
+            // Logo upload handling
+            document.getElementById('logoUpload').addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        document.getElementById('storeLogo').src = event.target.result;
+                        document.getElementById('storeLogo').style.display = 'block';
+                    }
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+            
+            // Barcode toggle
+            document.getElementById('barcodeToggle').addEventListener('change', function() {
+                updateReceipt();
+            });
+            
+            // Initial receipt update
+            updateReceipt();
+        });
+        
+        // Helper functions
+        function formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+        
+        function formatDateDisplay(dateString) {
+            const date = new Date(dateString);
+            const options = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
+            return date.toLocaleString('en-US', options);
+        }
+        
+        function generateGSTIN() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '27';
+            for (let i = 0; i < 10; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            result += '1Z5';
+            return result;
+        }
+        
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // Store information functions
+        function randomStoreName() {
+            const city = document.getElementById('storeCity').value;
+            const names = storeNames[city];
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            document.getElementById('storeName').value = randomName;
+            updateReceipt();
+        }
+        
+        function randomAddress() {
+            const city = document.getElementById('storeCity').value;
+            const street = streetNames[Math.floor(Math.random() * streetNames.length)];
+            const building = getRandomInt(1, 200);
+            const area = `${city} ${getRandomInt(1, 5)}${String.fromCharCode(65 + Math.floor(Math.random() * 6))}`;
+            const pin = getRandomInt(400000, 499999);
+            
+            const address = `Shop No. ${building}, ${street}, ${area}, ${pin}`;
+            document.getElementById('storeAddress').value = address;
+            updateReceipt();
+        }
+        
+        function randomGSTIN() {
+            document.getElementById('gstin').value = generateGSTIN();
+            updateReceipt();
+        }
+        
+        function randomLogo() {
+            const logos = [
+                'https://cdn-icons-png.flaticon.com/512/3698/3698156.png',
+                'https://cdn-icons-png.flaticon.com/512/1261/1261166.png',
+                'https://cdn-icons-png.flaticon.com/512/1261/1261165.png',
+                'https://cdn-icons-png.flaticon.com/512/1261/1261183.png',
+                'https://cdn-icons-png.flaticon.com/512/1261/1261163.png'
+            ];
+            const randomLogo = logos[Math.floor(Math.random() * logos.length)];
+            document.getElementById('storeLogo').src = randomLogo;
+            document.getElementById('storeLogo').style.display = 'block';
+        }
+        
+        function removeLogo() {
+            document.getElementById('storeLogo').src = '';
+            document.getElementById('storeLogo').style.display = 'none';
+        }
+        
+        // Receipt functions
+        function randomReceiptNumber() {
+            const year = new Date().getFullYear();
+            const num = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('receiptNumber').value = `RCT-${year}-${num}`;
+            updateReceipt();
+        }
+        
+        function randomRecentTime() {
+            const now = new Date();
+            const randomHours = Math.floor(Math.random() * 72); // Up to 3 days
+            const recentDate = new Date(now - randomHours * 60 * 60 * 1000);
+            document.getElementById('transactionDate').value = formatDateTimeLocal(recentDate);
+            updateReceipt();
+        }
+        
+        function randomCashierName() {
+            const randomName = cashierNames[Math.floor(Math.random() * cashierNames.length)];
+            document.getElementById('cashierName').value = randomName;
+            updateReceipt();
+        }
+        
+        function randomizeAll() {
+            randomStoreName();
+            randomAddress();
+            randomGSTIN();
+            randomReceiptNumber();
+            randomRecentTime();
+            randomCashierName();
+            randomLogo();
+            generateRandomItems();
+            updateReceipt();
+        }
+        
+        function generateRandomItems() {
+            const foodCount = parseInt(document.getElementById('foodItems').value) || 0;
+            const drinkCount = parseInt(document.getElementById('drinkItems').value) || 0;
+            const snackCount = parseInt(document.getElementById('snackItems').value) || 0;
+            const targetAmount = parseFloat(document.getElementById('targetAmount').value) || 500;
+            
+            itemsData = [];
+            let currentTotal = 0;
+            
+            // Generate food items
+            for (let i = 0; i < foodCount; i++) {
+                const randomItem = {...foodItems[Math.floor(Math.random() * foodItems.length)]};
+                randomItem.qty = 1;
+                itemsData.push(randomItem);
+                currentTotal += randomItem.price;
+            }
+            
+            // Generate drink items
+            for (let i = 0; i < drinkCount; i++) {
+                const randomItem = {...drinkItems[Math.floor(Math.random() * drinkItems.length)]};
+                randomItem.qty = 1;
+                itemsData.push(randomItem);
+                currentTotal += randomItem.price;
+            }
+            
+            // Generate snack items
+            for (let i = 0; i < snackCount; i++) {
+                const randomItem = {...snackItems[Math.floor(Math.random() * snackItems.length)]};
+                randomItem.qty = 1;
+                itemsData.push(randomItem);
+                currentTotal += randomItem.price;
+            }
+            
+            // Adjust prices to meet target (within 12%)
+            const targetVariance = 0.12;
+            const minTarget = targetAmount * (1 - targetVariance);
+            const maxTarget = targetAmount * (1 + targetVariance);
+            
+            if (itemsData.length > 0 && (currentTotal < minTarget || currentTotal > maxTarget)) {
+                const adjustmentFactor = targetAmount / currentTotal;
+                itemsData.forEach(item => {
+                    item.price = Math.round(item.price * adjustmentFactor * 100) / 100;
+                });
+            }
+            
+            // Render the item editor
+            renderItemEditor();
+            updateReceipt();
+        }
+        
+        function renderItemEditor() {
+            const container = document.getElementById('itemsEditorContainer');
+            container.innerHTML = '';
+            
+            let subtotal = 0;
+            
+            itemsData.forEach((item, index) => {
+                const itemTotal = item.qty * item.price;
+                subtotal += itemTotal;
+                
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.innerHTML = `
+                    <input type="text" class="item-name" value="${item.name}" placeholder="Item name" data-index="${index}">
+                    <input type="number" class="item-qty" value="${item.qty}" min="1" placeholder="Qty" data-index="${index}">
+                    <input type="number" class="item-price" value="${item.price.toFixed(2)}" min="0" step="0.01" placeholder="Price" data-index="${index}">
+                    <div class="item-total">₹${itemTotal.toFixed(2)}</div>
+                    <button class="delete-item" data-index="${index}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(row);
+            });
+            
+            // Update subtotal display
+            document.getElementById('subtotalAmount').textContent = subtotal.toFixed(2);
+            
+            // Add event listeners
+            document.querySelectorAll('.item-name, .item-qty, .item-price').forEach(input => {
+                input.addEventListener('input', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    if (this.classList.contains('item-name')) {
+                        itemsData[index].name = this.value;
+                    } else if (this.classList.contains('item-qty')) {
+                        itemsData[index].qty = parseInt(this.value) || 1;
+                    } else if (this.classList.contains('item-price')) {
+                        itemsData[index].price = parseFloat(this.value) || 0;
+                    }
+                    
+                    // Update total for this row
+                    const row = this.closest('.item-row');
+                    const totalDiv = row.querySelector('.item-total');
+                    const itemTotal = itemsData[index].qty * itemsData[index].price;
+                    totalDiv.textContent = `₹${itemTotal.toFixed(2)}`;
+                    
+                    // Update subtotal
+                    updateSubtotal();
+                    updateReceipt();
+                });
+            });
+            
+            document.querySelectorAll('.delete-item').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    itemsData.splice(index, 1);
+                    renderItemEditor();
+                    updateReceipt();
+                });
+            });
+        }
+        
+        function updateSubtotal() {
+            let subtotal = 0;
+            itemsData.forEach(item => {
+                subtotal += item.qty * item.price;
+            });
+            document.getElementById('subtotalAmount').textContent = subtotal.toFixed(2);
+        }
+        
+        function addNewItem() {
+            itemsData.push({
+                name: "New Item",
+                qty: 1,
+                price: 0
+            });
+            renderItemEditor();
+            updateReceipt();
+        }
+        
+        function updateReceipt() {
+            // Update store info
+            document.getElementById('storeNameDisplay').textContent = document.getElementById('storeName').value;
+            document.getElementById('storeAddressDisplay').textContent = document.getElementById('storeAddress').value;
+            document.getElementById('gstinDisplay').textContent = 'GSTIN: ' + document.getElementById('gstin').value;
+            
+            // Update receipt info
+            document.getElementById('receiptNumberDisplay').textContent = document.getElementById('receiptNumber').value;
+            document.getElementById('transactionDateDisplay').textContent = formatDateDisplay(document.getElementById('transactionDate').value);
+            document.getElementById('cashierNameDisplay').textContent = document.getElementById('cashierName').value;
+            
+            // Update items list
+            const itemsList = document.getElementById('itemsList');
+            itemsList.innerHTML = '';
+            
+            let subtotal = 0;
+            
+            itemsData.forEach(item => {
+                const itemTotal = item.price * item.qty;
+                subtotal += itemTotal;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.qty}</td>
+                    <td class="align-right">₹${item.price.toFixed(2)}</td>
+                    <td class="align-right">₹${itemTotal.toFixed(2)}</td>
+                `;
+                itemsList.appendChild(row);
+            });
+            
+            // Calculate taxes
+            const cgstRate = parseFloat(document.getElementById('cgstRate').value) || 9;
+            const sgstRate = parseFloat(document.getElementById('sgstRate').value) || 9;
+            const cgstAmount = (subtotal * cgstRate) / 100;
+            const sgstAmount = (subtotal * sgstRate) / 100;
+            const totalAmount = subtotal + cgstAmount + sgstAmount;
+            
+            document.getElementById('cgstAmount').textContent = cgstAmount.toFixed(2);
+            document.getElementById('sgstAmount').textContent = sgstAmount.toFixed(2);
+            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+            
+            // Update payment info
+            const paymentType = document.querySelector('input[name="paymentType"]:checked').value;
+            document.getElementById('paymentMethod').textContent = paymentType === 'cash' ? 'Cash' : 'Credit Card';
+            
+            let paymentDetails = '';
+            if (paymentType === 'cash') {
+                const cashAmount = parseFloat(document.getElementById('cashAmount').value) || 0;
+                const change = cashAmount - totalAmount;
+                
+                if (change < 0) {
+                    document.getElementById('cashError').style.display = 'block';
+                    paymentDetails = `Cash Received: ₹${cashAmount.toFixed(2)}, Change: <span style="color:red">₹${change.toFixed(2)}</span>`;
+                } else {
+                    document.getElementById('cashError').style.display = 'none';
+                    paymentDetails = `Cash Received: ₹${cashAmount.toFixed(2)}, Change: ₹${change.toFixed(2)}`;
+                }
+            } else {
+                const cardNumber = document.getElementById('cardNumber').value || '3357';
+                paymentDetails = `Card Ending: ****${cardNumber}`;
+            }
+            
+            document.getElementById('paymentDetails').innerHTML = paymentDetails;
+            
+            // Generate barcode if enabled
+            const barcodeToggle = document.getElementById('barcodeToggle').checked;
+            if (barcodeToggle) {
+                document.getElementById('barcodeContainer').style.display = 'block';
+                JsBarcode("#barcode", document.getElementById('receiptNumber').value, {
+                    format: "CODE128",
+                    displayValue: true,
+                    fontSize: 8,
+                    height: 25,
+                    width: 1.2,
+                    margin: 0
+                });
+            } else {
+                document.getElementById('barcodeContainer').style.display = 'none';
+            }
+        }
+        
+        // Download functions
+        function downloadPDF() {
+            const receipt = document.getElementById('receipt');
+            const receiptWidth = receipt.offsetWidth;
+            const receiptHeight = receipt.offsetHeight;
+            
+            html2canvas(receipt, {
+                scale: 2,
+                backgroundColor: '#FFFFFF'
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF({
+                    orientation: receiptWidth > receiptHeight ? 'landscape' : 'portrait',
+                    unit: 'px',
+                    format: [receiptWidth, receiptHeight]
+                });
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, receiptWidth, receiptHeight);
+                pdf.save('supermarket-receipt.pdf');
+            });
+        }
+        
+        function downloadJPG() {
+            const receipt = document.getElementById('receipt');
+            
+            html2canvas(receipt, {
+                scale: 2,
+                backgroundColor: '#FFFFFF'
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'supermarket-receipt.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+            });
+        }
+        
+        function downloadPNG() {
+            const receipt = document.getElementById('receipt');
+            
+            html2canvas(receipt, {
+                scale: 2,
+                backgroundColor: '#FFFFFF'
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'supermarket-receipt.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+        
+        function printReceipt() {
+            const receipt = document.getElementById('receipt');
+            const printWindow = window.open('', '_blank');
+            
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print Receipt</title>
+                    <style>
+                        body {
+                            margin: 0;
+                            padding: 10px;
+                            background: white;
+                            font-family: 'Courier New', Courier, monospace;
+                        }
+                        .receipt {
+                            width: ${receipt.offsetWidth}px;
+                            background: white;
+                            padding: 20px;
+                            font-size: 14px;
+                            line-height: 1.4;
+                        }
+                        @media print {
+                            body {
+                                padding: 0;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${receipt.outerHTML}
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            setTimeout(function() {
+                                window.close();
+                            }, 1000);
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+        }
+    </script>
+</body>
+</html>
