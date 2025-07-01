@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,8 +39,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="%230f3460" stroke-width="0.5" opacity="0.3"/></svg>');
-            opacity: 0.2;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(15, 52, 96, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(233, 69, 96, 0.1) 0%, transparent 40%),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="%230f3460" stroke-width="0.3" opacity="0.2"/></svg>');
+            opacity: 0.4;
             z-index: -1;
         }
 
@@ -50,7 +53,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px 5%;
-            background: rgba(10, 10, 20, 0.8);
+            background: rgba(10, 10, 20, 0.85);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--accent);
             position: sticky;
@@ -67,6 +70,7 @@
         .logo-icon {
             font-size: 2.5rem;
             color: var(--highlight);
+            animation: pulse 2s infinite;
         }
 
         .logo h1 {
@@ -229,6 +233,7 @@
             transition: var(--transition);
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
 
         .tool-card:hover {
@@ -459,6 +464,12 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
 
         .welcome-section, .tool-card {
             animation: fadeIn 0.6s ease-out forwards;
@@ -474,6 +485,25 @@
 
         .tool-card:nth-child(4) {
             animation-delay: 0.6s;
+        }
+        
+        /* 通知条 */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(15, 52, 96, 0.9);
+            border-left: 4px solid var(--highlight);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateX(150%);
+            transition: transform 0.5s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
         }
     </style>
 </head>
@@ -520,7 +550,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="supermarket01.html" class="nav-link">
                         <i class="fas fa-shopping-cart"></i>
                         <span>Supermarket Receipt Generator</span>
                     </a>
@@ -569,7 +599,7 @@
                         </div>
                         <div class="tool-body">
                             <p>Generate realistic supermarket receipts with product listings, prices, discounts, and store information. Fully customizable.</p>
-                            <button class="tool-btn">Use Tool</button>
+                            <a href="supermarket01.html" class="tool-btn">Use Tool</a>
                         </div>
                     </div>
                     
@@ -620,6 +650,11 @@
                 <button class="login-submit">Login to Admin Panel</button>
             </div>
         </div>
+    </div>
+    
+    <!-- 通知条 -->
+    <div class="notification" id="notification">
+        <i class="fas fa-shopping-cart"></i> Redirecting to Supermarket Receipt Generator...
     </div>
     
     <script>
@@ -711,6 +746,23 @@
                 document.querySelector('.form-header h2').textContent = 'Admin Login';
                 document.querySelector('.login-submit').textContent = 'Login to Admin Panel';
             }
+        });
+        
+        // 超市小票生成工具按钮功能
+        document.querySelectorAll('.tool-btn')[1].addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // 显示通知
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+            
+            // 添加超市购物车动画图标
+            notification.innerHTML = '<i class="fas fa-shopping-cart fa-spin"></i> Redirecting to Supermarket Receipt Generator...';
+            
+            // 延迟跳转
+            setTimeout(() => {
+                window.location.href = 'supermarket01.html';
+            }, 1500);
         });
     </script>
 </body>
