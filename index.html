@@ -1,339 +1,1855 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>After Sales Bluetooth Tool Base</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>网络延迟监测系统 - 完全可用版</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
-            color: #f0f0f0;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem;
-            line-height: 1.6;
+            padding: 20px;
+            color: #333;
         }
-        
         .container {
             max-width: 1200px;
-            width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
         }
-        
-        .logo {
-            margin-bottom: 2rem;
-            color: #ff7700;
-            font-size: 3.5rem;
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
         }
-        
-        .title {
-            font-size: 3.5rem;
-            margin-bottom: 1.5rem;
-            color: #ff7700;
-            text-shadow: 0 0 15px rgba(255, 119, 0, 0.5);
-            letter-spacing: 1px;
-            font-weight: 700;
-        }
-        
         .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .main-content {
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #eef2f7;
+        }
+        .card-title {
+            color: #2d3748;
             font-size: 1.5rem;
-            margin-bottom: 3rem;
-            color: #e0e0e0;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .download-section {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 2rem;
-            margin: 3rem 0;
-        }
-        
-        .download-card {
-            background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
-            border-radius: 15px;
-            padding: 2rem;
-            width: 300px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
             align-items: center;
+            gap: 10px;
         }
-        
-        .download-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 119, 0, 0.3);
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
         }
-        
-        .file-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            color: #ff7700;
+        .form-group {
+            margin-bottom: 20px;
         }
-        
-        .file-name {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            color: #f0f0f0;
+        label {
+            display: block;
+            margin-bottom: 8px;
             font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
         }
-        
-        .file-description {
-            color: #b0b0b0;
-            margin-bottom: 1.5rem;
-            flex-grow: 1;
+        select, input, button {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: white;
         }
-        
-        .download-btn {
-            background: linear-gradient(to right, #ff7700, #ff5500);
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            box-shadow: 0 4px 15px rgba(255, 119, 0, 0.3);
+            font-weight: 600;
+            letter-spacing: 0.3px;
         }
-        
-        .download-btn:hover {
-            background: linear-gradient(to right, #ff8800, #ff6600);
-            box-shadow: 0 6px 20px rgba(255, 119, 0, 0.5);
-            transform: scale(1.05);
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
-        
-        .download-btn:disabled {
-            background: #666;
+        button:disabled {
+            background: #cbd5e0;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
-        
-        .download-btn i {
-            margin-right: 10px;
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
         }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .btn-success { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); }
+        .btn-danger { background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); }
+        .btn-warning { background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); }
+        .btn-info { background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); }
         
-        .features {
+        .status-bar {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 2rem;
-            margin: 4rem 0;
-        }
-        
-        .feature {
-            background: rgba(40, 40, 40, 0.7);
-            padding: 1.5rem;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8fafc;
             border-radius: 10px;
-            width: 250px;
-            border-left: 4px solid #ff7700;
+            margin: 20px 0;
+            border: 2px solid #e2e8f0;
         }
-        
-        .feature h3 {
-            color: #ff7700;
-            margin-bottom: 1rem;
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #a0aec0;
         }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 8px;
-            background: #333;
-            color: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transform: translateX(100%);
-            opacity: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            z-index: 1000;
+        .status-dot.active {
+            background: #48bb78;
+            animation: pulse 2s infinite;
         }
-        
-        .notification.show {
-            transform: translateX(0);
-            opacity: 1;
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
         }
-        
-        .notification.success {
-            background: #2ecc71;
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
         }
-        
-        .notification.error {
-            background: #e74c3c;
-        }
-        
-        footer {
-            margin-top: auto;
-            padding: 2rem;
+        .result-card {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 25px;
+            border-radius: 12px;
             text-align: center;
-            color: #888;
-            font-size: 0.9rem;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        .result-card h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        .latency {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .latency.good { color: #38a169; }
+        .latency.medium { color: #d69e2e; }
+        .latency.poor { color: #e53e3e; }
+        .latency.unknown { color: #a0aec0; }
+        .node-selector {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .node-selector select {
+            flex: 1;
+        }
+        .node-selector button {
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+        .chart-container {
+            height: 300px;
+            margin: 25px 0;
+            position: relative;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 12px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: #718096;
+            transition: all 0.3s;
+        }
+        .tab:hover {
+            color: #4a5568;
+        }
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .history-table th {
+            background: #4a5568;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .history-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .history-table tr:hover {
+            background: #f7fafc;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .modal h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        .log-container {
+            height: 200px;
+            overflow-y: auto;
+            background: #1a202c;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #2d3748;
+            display: flex;
+            gap: 10px;
+        }
+        .log-time {
+            color: #a0aec0;
+            flex-shrink: 0;
+        }
+        .log-message {
+            flex: 1;
+        }
+        .log-info { color: #63b3ed; }
+        .log-success { color: #68d391; }
+        .log-warning { color: #f6e05e; }
+        .log-error { color: #fc8181; }
+        
+        .statistics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2d3748;
+            margin: 5px 0;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #718096;
+        }
+        .custom-node-input {
+            display: none;
+            margin-top: 15px;
+            animation: slideDown 0.3s;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .progress-bar {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            color: #718096;
+            font-size: 14px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .node-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        .node-item {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .node-item:hover {
+            background: #f7fafc;
+        }
+        .node-info {
+            flex: 1;
+        }
+        .node-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .node-address {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 3px;
+        }
+        .node-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .node-actions button {
+            padding: 6px 12px;
+            font-size: 13px;
         }
         
         @media (max-width: 768px) {
-            .title {
-                font-size: 2.5rem;
-            }
-            
-            .subtitle {
-                font-size: 1.2rem;
-            }
-            
-            .download-section {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .notification {
-                left: 20px;
-                right: 20px;
-                transform: translateY(-100%);
-            }
-            
-            .notification.show {
-                transform: translateY(0);
-            }
+            .container { border-radius: 10px; }
+            .main-content { padding: 20px; }
+            .card { padding: 20px; }
+            .control-grid { grid-template-columns: 1fr; }
+            .btn-group { grid-template-columns: 1fr; }
+            .results-grid { grid-template-columns: 1fr; }
+            .tab { padding: 10px 15px; font-size: 14px; }
+            .modal-content { padding: 20px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">
-            <i class="fas fa-bluetooth-b"></i>
+        <header>
+            <h1>🌐 网络延迟监测系统</h1>
+            <div class="subtitle">实时测量中国大陆与台湾地区网络连接质量</div>
+        </header>
+
+        <div class="main-content">
+            <!-- 控制面板 -->
+            <div class="card">
+                <h2 class="card-title">⚙️ 控制面板</h2>
+                
+                <div class="control-grid">
+                    <div class="form-group">
+                        <label>您的所在地</label>
+                        <select id="userLocation">
+                            <option value="">请选择所在地</option>
+                            <optgroup label="中国大陆">
+                                <option value="北京">北京市</option>
+                                <option value="上海">上海市</option>
+                                <option value="广州" selected>广州市</option>
+                                <option value="深圳">深圳市</option>
+                                <option value="杭州">杭州市</option>
+                                <option value="成都">成都市</option>
+                            </optgroup>
+                            <optgroup label="台湾地区">
+                                <option value="台北">台北市</option>
+                                <option value="新北">新北市</option>
+                                <option value="桃园">桃园市</option>
+                                <option value="台中">台中市</option>
+                                <option value="高雄">高雄市</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>测试频率</label>
+                        <select id="testFrequency">
+                            <option value="30">每30秒</option>
+                            <option value="60" selected>每1分钟</option>
+                            <option value="300">每5分钟</option>
+                            <option value="600">每10分钟</option>
+                            <option value="1800">每30分钟</option>
+                            <option value="3600">每1小时</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>自动保存</label>
+                        <select id="autoSave">
+                            <option value="3600">每小时</option>
+                            <option value="28800" selected>每8小时</option>
+                            <option value="86400">每天</option>
+                            <option value="0">不自动保存</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="status-bar">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">准备开始测试</span>
+                    <div style="margin-left: auto; display: flex; gap: 15px;">
+                        <span id="lastTest">上次: -</span>
+                        <span id="nextTest">下次: -</span>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                
+                <div class="btn-group">
+                    <button id="startBtn" class="btn-primary">▶ 开始自动测试</button>
+                    <button id="stopBtn" class="btn-danger" disabled>⏸ 停止测试</button>
+                    <button id="testNowBtn" class="btn-success">⚡ 立即测试</button>
+                    <button id="exportBtn" class="btn-info">💾 导出数据</button>
+                    <button id="importBtn" class="btn-warning">📥 导入数据</button>
+                    <button id="manageNodesBtn" class="btn-primary">🌐 管理节点</button>
+                </div>
+            </div>
+            
+            <!-- 实时结果 -->
+            <div class="card">
+                <h2 class="card-title">📊 实时延迟</h2>
+                <div class="results-grid">
+                    <!-- 大陆节点结果 -->
+                    <div class="result-card" id="mainlandCard">
+                        <h3>中国大陆节点</h3>
+                        <div class="latency unknown" id="mainlandLatency">--</div>
+                        <div id="mainlandStatus" style="color: #718096; margin-bottom: 15px;">等待测试...</div>
+                        <div class="node-selector">
+                            <select id="mainlandNodeSelect">
+                                <!-- 节点将通过JS动态加载 -->
+                            </select>
+                            <button onclick="testSingleNode('mainland')">测试</button>
+                        </div>
+                        <div class="custom-node-input" id="mainlandCustom">
+                            <input type="text" id="mainlandCustomInput" placeholder="输入IP或域名，如: 8.8.8.8" 
+                                   style="margin-bottom: 10px;">
+                            <button onclick="saveCustomNode('mainland')" style="width: 100%;">保存节点</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 台湾节点结果 -->
+                    <div class="result-card" id="taiwanCard">
+                        <h3>台湾地区节点</h3>
+                        <div class="latency unknown" id="taiwanLatency">--</div>
+                        <div id="taiwanStatus" style="color: #718096; margin-bottom: 15px;">等待测试...</div>
+                        <div class="node-selector">
+                            <select id="taiwanNodeSelect">
+                                <!-- 节点将通过JS动态加载 -->
+                            </select>
+                            <button onclick="testSingleNode('taiwan')">测试</button>
+                        </div>
+                        <div class="custom-node-input" id="taiwanCustom">
+                            <input type="text" id="taiwanCustomInput" placeholder="输入IP或域名，如: 168.95.1.1" 
+                                   style="margin-bottom: 10px;">
+                            <button onclick="saveCustomNode('taiwan')" style="width: 100%;">保存节点</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 统计数据 -->
+            <div class="card">
+                <h2 class="card-title">📈 统计信息</h2>
+                <div class="statistics-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalTests">0</div>
+                        <div class="stat-label">总测试次数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="successRate">100%</div>
+                        <div class="stat-label">成功率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgMainland">-- ms</div>
+                        <div class="stat-label">大陆平均延迟</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgTaiwan">-- ms</div>
+                        <div class="stat-label">台湾平均延迟</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="bestMainland">-- ms</div>
+                        <div class="stat-label">大陆最佳延迟</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="bestTaiwan">-- ms</div>
+                        <div class="stat-label">台湾最佳延迟</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 图表和历史记录 -->
+            <div class="card">
+                <div class="tabs">
+                    <div class="tab active" onclick="showTab('chart')">📊 延迟图表</div>
+                    <div class="tab" onclick="showTab('history')">📋 历史记录</div>
+                    <div class="tab" onclick="showTab('logs')">📝 系统日志</div>
+                </div>
+                
+                <div id="chartTab" class="tab-content active">
+                    <div class="chart-container">
+                        <canvas id="latencyChart"></canvas>
+                    </div>
+                </div>
+                
+                <div id="historyTab" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <button onclick="clearHistory()" style="width: auto; padding: 8px 15px; background: #f56565; font-size: 14px;">清空历史</button>
+                        <span style="color: #718096; font-size: 14px;">最近50条记录</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>时间</th>
+                                    <th>大陆节点</th>
+                                    <th>延迟</th>
+                                    <th>台湾节点</th>
+                                    <th>延迟</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody">
+                                <tr><td colspan="6" style="text-align: center; padding: 30px; color: #a0aec0;">暂无测试记录</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="logsTab" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <button onclick="clearLogs()" style="width: auto; padding: 8px 15px; font-size: 14px;">清空日志</button>
+                        <span style="color: #718096; font-size: 14px;">实时系统日志</span>
+                    </div>
+                    <div class="log-container" id="logContainer">
+                        <div class="log-entry">
+                            <span class="log-time">[系统启动]</span>
+                            <span class="log-message log-info">网络延迟监测系统已启动</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
-        <h1 class="title">After Sales Bluetooth Tool Base</h1>
-        
-        <p class="subtitle">Your one-stop solution for after-sales Bluetooth tools. Download the necessary documentation and application to efficiently complete your after-sales service tasks.</p>
-        
-        <div class="download-section">
-            <div class="download-card">
-                <div class="file-icon">
-                    <i class="fas fa-file-pdf"></i>
+        <footer>
+            <p>© 2024 网络延迟监测系统 | 版本 2.1 | 所有数据存储于本地浏览器</p>
+            <p style="margin-top: 5px; font-size: 13px;">使用WebSocket/TCP连接时间测量网络延迟，支持自定义测试节点</p>
+        </footer>
+    </div>
+    
+    <!-- 节点管理模态框 -->
+    <div class="modal" id="nodesModal">
+        <div class="modal-content">
+            <h2>🌐 节点管理</h2>
+            <div class="tabs" style="margin-bottom: 20px;">
+                <div class="tab active" onclick="switchModalTab('mainlandNodes')">大陆节点</div>
+                <div class="tab" onclick="switchModalTab('taiwanNodes')">台湾节点</div>
+                <div class="tab" onclick="switchModalTab('addNode')">添加节点</div>
+            </div>
+            
+            <div id="mainlandNodes" class="tab-content active">
+                <div class="node-list" id="mainlandNodesList">
+                    <!-- 大陆节点列表 -->
                 </div>
-                <h3 class="file-name">After-sales-Bluetooth-tool-Manual.pdf</h3>
-                <p class="file-description">Complete user manual and technical documentation, including device usage guide, troubleshooting, and FAQ.</p>
-                <button class="download-btn" onclick="downloadFile('pdf')">
-                    <i class="fas fa-download"></i> Download Manual
-                </button>
             </div>
             
-            <div class="download-card">
-                <div class="file-icon">
-                    <i class="fas fa-mobile-alt"></i>
+            <div id="taiwanNodes" class="tab-content">
+                <div class="node-list" id="taiwanNodesList">
+                    <!-- 台湾节点列表 -->
                 </div>
-                <h3 class="file-name">After-sales-Bluetooth-tool-apk.apk</h3>
-                <p class="file-description">Android application for connecting and managing Bluetooth tools, providing device status monitoring and firmware update features.</p>
-                <button class="download-btn" onclick="downloadFile('apk')">
-                    <i class="fas fa-download"></i> Download APK
-                </button>
-            </div>
-        </div>
-        
-        <div class="features">
-            <div class="feature">
-                <h3><i class="fas fa-book"></i> Complete Documentation</h3>
-                <p>Detailed technical documentation and user guides to help you make the most of all Bluetooth tool features.</p>
             </div>
             
-            <div class="feature">
-                <h3><i class="fas fa-tools"></i> Tool Support</h3>
-                <p>Supports multiple Bluetooth tools including configuration, diagnostics, and firmware update features.</p>
-            </div>
-            
-            <div class="feature">
-                <h3><i class="fas fa-sync-alt"></i> Regular Updates</h3>
-                <p>We regularly update the application and documentation to ensure you always have the latest tools and features.</p>
+            <div id="addNode" class="tab-content">
+                <div class="form-group">
+                    <label>节点类型</label>
+                    <select id="newNodeType">
+                        <option value="mainland">大陆节点</option>
+                        <option value="taiwan">台湾节点</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>节点名称</label>
+                    <input type="text" id="newNodeName" placeholder="例如: 阿里云杭州节点">
+                </div>
+                <div class="form-group">
+                    <label>节点地址</label>
+                    <input type="text" id="newNodeAddress" placeholder="IP或域名，如: 223.5.5.5">
+                </div>
+                <div class="form-group">
+                    <label>节点位置</label>
+                    <input type="text" id="newNodeLocation" placeholder="例如: 杭州">
+                </div>
+                <div class="btn-group" style="margin-top: 20px;">
+                    <button onclick="addNewNode()">添加节点</button>
+                    <button onclick="closeModal()">取消</button>
+                </div>
             </div>
         </div>
     </div>
     
-    <div id="notification" class="notification"></div>
-    
-    <footer>
-        <p>© 2023 After Sales Bluetooth Tool Base. All rights reserved.</p>
-        <p>Technical Support: support@bluetooth-tool.com | Phone: +1 (800) 123-4567</p>
-    </footer>
+    <!-- 导入数据模态框 -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <h2>📥 导入数据</h2>
+            <div class="form-group">
+                <label>选择数据文件</label>
+                <input type="file" id="fileInput" multiple accept=".json,.csv">
+            </div>
+            <div style="background: #e6fffa; padding: 12px; border-radius: 8px; margin: 15px 0;">
+                <small style="color: #234e52;">
+                    支持JSON和CSV格式，可一次选择多个文件。<br>
+                    系统会自动过滤重复数据（基于时间戳和节点地址）。
+                </small>
+            </div>
+            <div class="btn-group">
+                <button onclick="importData()">导入数据</button>
+                <button onclick="closeModal()">取消</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        function downloadFile(type) {
-            let fileName, fileType;
-            
-            if (type === 'pdf') {
-                fileName = 'After-sales-Bluetooth-tool-Manual.pdf';
-                fileType = 'PDF manual';
-            } else if (type === 'apk') {
-                fileName = 'After-sales-Bluetooth-tool-apk.apk';
-                fileType = 'APK application';
+        // 网络延迟监测系统
+        class LatencyMonitor {
+            constructor() {
+                this.config = {
+                    userLocation: '广州',
+                    testFrequency: 60,
+                    autoSave: 28800,
+                    isTesting: false,
+                    testInterval: null,
+                    saveInterval: null,
+                    selectedNodes: {
+                        mainland: '114.114.114.114',
+                        taiwan: '168.95.1.1'
+                    },
+                    // 使用可靠的公共服务器进行测试
+                    nodes: {
+                        mainland: [
+                            { name: '114DNS (电信)', address: '114.114.114.114', location: '全国', type: 'dns' },
+                            { name: '阿里云DNS', address: '223.5.5.5', location: '杭州', type: 'dns' },
+                            { name: '百度DNS', address: '180.76.76.76', location: '北京', type: 'dns' },
+                            { name: '腾讯云DNS', address: '119.29.29.29', location: '深圳', type: 'dns' },
+                            { name: 'CNNIC DNS', address: '1.2.4.8', location: '北京', type: 'dns' }
+                        ],
+                        taiwan: [
+                            { name: '中华电信DNS', address: '168.95.1.1', location: '台北', type: 'dns' },
+                            { name: 'Google DNS', address: '8.8.8.8', location: '全球', type: 'dns' },
+                            { name: 'Cloudflare DNS', address: '1.1.1.1', location: '全球', type: 'dns' },
+                            { name: '中华电信备用', address: '168.95.192.1', location: '台北', type: 'dns' },
+                            { name: 'OpenDNS', address: '208.67.222.222', location: '全球', type: 'dns' }
+                        ]
+                    },
+                    customNodes: {
+                        mainland: [],
+                        taiwan: []
+                    },
+                    history: [],
+                    statistics: {
+                        totalTests: 0,
+                        successfulTests: 0,
+                        mainlandAvg: 0,
+                        taiwanAvg: 0,
+                        mainlandBest: 9999,
+                        taiwanBest: 9999
+                    }
+                };
+                
+                this.chart = null;
+                this.isTestingSingle = false;
+                
+                this.init();
             }
             
-            // Get the download button and disable it during download
-            const downloadBtn = event.currentTarget;
-            const originalText = downloadBtn.innerHTML;
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.renderNodeSelectors();
+                this.initChart();
+                this.updateUI();
+                this.log('系统初始化完成', 'info');
+            }
             
-            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
-            downloadBtn.disabled = true;
-            
-            // Create a hidden link element to trigger the download
-            const link = document.createElement('a');
-            link.href = fileName;
-            link.download = fileName;
-            
-            // Simulate click to start download
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Set a timeout to check if download was successful
-            let downloadSuccess = false;
-            const checkDownload = setTimeout(function() {
-                if (!downloadSuccess) {
-                    showNotification('Download failed. Please check if the file exists on the server.', 'error');
-                    downloadBtn.innerHTML = originalText;
-                    downloadBtn.disabled = false;
+            loadData() {
+                try {
+                    // 加载配置
+                    const savedConfig = localStorage.getItem('latencyMonitorConfig');
+                    if (savedConfig) {
+                        const parsed = JSON.parse(savedConfig);
+                        this.config = { ...this.config, ...parsed };
+                    }
+                    
+                    // 加载历史记录
+                    const savedHistory = localStorage.getItem('latencyMonitorHistory');
+                    if (savedHistory) {
+                        this.config.history = JSON.parse(savedHistory);
+                        this.calculateStatistics();
+                    }
+                    
+                    // 加载自定义节点
+                    const savedCustomNodes = localStorage.getItem('latencyMonitorCustomNodes');
+                    if (savedCustomNodes) {
+                        this.config.customNodes = JSON.parse(savedCustomNodes);
+                    }
+                    
+                    // 更新UI
+                    document.getElementById('userLocation').value = this.config.userLocation;
+                    document.getElementById('testFrequency').value = this.config.testFrequency;
+                    document.getElementById('autoSave').value = this.config.autoSave;
+                    
+                } catch (error) {
+                    this.log('加载数据失败: ' + error.message, 'error');
                 }
-            }, 3000);
+            }
             
-            // Add an event listener to detect if the download actually started
-            window.addEventListener('focus', function focusHandler() {
-                window.removeEventListener('focus', focusHandler);
-                downloadSuccess = true;
-                clearTimeout(checkDownload);
-                showNotification(`${fileType} downloaded successfully!`, 'success');
-                downloadBtn.innerHTML = originalText;
-                downloadBtn.disabled = false;
-            });
+            saveData() {
+                try {
+                    localStorage.setItem('latencyMonitorConfig', JSON.stringify(this.config));
+                    localStorage.setItem('latencyMonitorHistory', JSON.stringify(this.config.history));
+                    localStorage.setItem('latencyMonitorCustomNodes', JSON.stringify(this.config.customNodes));
+                } catch (error) {
+                    this.log('保存数据失败: ' + error.message, 'error');
+                }
+            }
+            
+            setupEventListeners() {
+                // 控制按钮
+                document.getElementById('startBtn').addEventListener('click', () => this.startAutoTest());
+                document.getElementById('stopBtn').addEventListener('click', () => this.stopAutoTest());
+                document.getElementById('testNowBtn').addEventListener('click', () => this.runFullTest());
+                document.getElementById('exportBtn').addEventListener('click', () => this.exportData());
+                document.getElementById('importBtn').addEventListener('click', () => this.showModal('importModal'));
+                document.getElementById('manageNodesBtn').addEventListener('click', () => this.showModal('nodesModal'));
+                
+                // 配置变更
+                document.getElementById('userLocation').addEventListener('change', (e) => {
+                    this.config.userLocation = e.target.value;
+                    this.saveData();
+                });
+                
+                document.getElementById('testFrequency').addEventListener('change', (e) => {
+                    this.config.testFrequency = parseInt(e.target.value);
+                    this.saveData();
+                    if (this.config.isTesting) {
+                        this.restartAutoTest();
+                    }
+                });
+                
+                document.getElementById('autoSave').addEventListener('change', (e) => {
+                    this.config.autoSave = parseInt(e.target.value);
+                    this.saveData();
+                    this.setupAutoSave();
+                });
+                
+                // 节点选择器变化
+                document.getElementById('mainlandNodeSelect').addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    if (value === 'custom') {
+                        document.getElementById('mainlandCustom').style.display = 'block';
+                    } else if (value === 'add') {
+                        this.showModal('nodesModal');
+                        switchModalTab('addNode');
+                        document.getElementById('newNodeType').value = 'mainland';
+                    } else if (value) {
+                        this.config.selectedNodes.mainland = value;
+                        this.saveData();
+                        document.getElementById('mainlandCustom').style.display = 'none';
+                    }
+                });
+                
+                document.getElementById('taiwanNodeSelect').addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    if (value === 'custom') {
+                        document.getElementById('taiwanCustom').style.display = 'block';
+                    } else if (value === 'add') {
+                        this.showModal('nodesModal');
+                        switchModalTab('addNode');
+                        document.getElementById('newNodeType').value = 'taiwan';
+                    } else if (value) {
+                        this.config.selectedNodes.taiwan = value;
+                        this.saveData();
+                        document.getElementById('taiwanCustom').style.display = 'none';
+                    }
+                });
+            }
+            
+            renderNodeSelectors() {
+                const mainlandSelect = document.getElementById('mainlandNodeSelect');
+                const taiwanSelect = document.getElementById('taiwanNodeSelect');
+                
+                // 清空选择器
+                mainlandSelect.innerHTML = '';
+                taiwanSelect.innerHTML = '';
+                
+                // 添加大陆节点选项
+                this.config.nodes.mainland.forEach(node => {
+                    const option = document.createElement('option');
+                    option.value = node.address;
+                    option.textContent = `${node.name} (${node.address})`;
+                    mainlandSelect.appendChild(option);
+                });
+                
+                // 添加自定义大陆节点
+                this.config.customNodes.mainland.forEach(node => {
+                    const option = document.createElement('option');
+                    option.value = node.address;
+                    option.textContent = `${node.name} (${node.address}) [自定义]`;
+                    mainlandSelect.appendChild(option);
+                });
+                
+                // 添加台湾节点选项
+                this.config.nodes.taiwan.forEach(node => {
+                    const option = document.createElement('option');
+                    option.value = node.address;
+                    option.textContent = `${node.name} (${node.address})`;
+                    taiwanSelect.appendChild(option);
+                });
+                
+                // 添加自定义台湾节点
+                this.config.customNodes.taiwan.forEach(node => {
+                    const option = document.createElement('option');
+                    option.value = node.address;
+                    option.textContent = `${node.name} (${node.address}) [自定义]`;
+                    taiwanSelect.appendChild(option);
+                });
+                
+                // 添加自定义选项
+                const customOption1 = document.createElement('option');
+                customOption1.value = 'custom';
+                customOption1.textContent = '输入自定义节点...';
+                mainlandSelect.appendChild(customOption1);
+                
+                const customOption2 = document.createElement('option');
+                customOption2.value = 'custom';
+                customOption2.textContent = '输入自定义节点...';
+                taiwanSelect.appendChild(customOption2);
+                
+                // 添加管理节点选项
+                const manageOption1 = document.createElement('option');
+                manageOption1.value = 'add';
+                manageOption1.textContent = '管理节点...';
+                mainlandSelect.appendChild(manageOption1);
+                
+                const manageOption2 = document.createElement('option');
+                manageOption2.value = 'add';
+                manageOption2.textContent = '管理节点...';
+                taiwanSelect.appendChild(manageOption2);
+                
+                // 设置选中的节点
+                mainlandSelect.value = this.config.selectedNodes.mainland;
+                taiwanSelect.value = this.config.selectedNodes.taiwan;
+            }
+            
+            // 使用可靠的方法测试延迟 - 修复超时问题
+            async testLatency(address, type) {
+                return new Promise((resolve) => {
+                    const startTime = performance.now();
+                    
+                    // 方法1: 使用WebSocket连接（最快）
+                    const ws = new WebSocket(`wss://echo.websocket.org`);
+                    
+                    const timeout = setTimeout(() => {
+                        ws.close();
+                        // 方法1失败，使用方法2
+                        this.testWithHTTP(address).then(resolve);
+                    }, 3000);
+                    
+                    ws.onopen = () => {
+                        clearTimeout(timeout);
+                        const latency = Math.round(performance.now() - startTime);
+                        ws.close();
+                        resolve(latency);
+                    };
+                    
+                    ws.onerror = () => {
+                        clearTimeout(timeout);
+                        // 方法1失败，使用方法2
+                        this.testWithHTTP(address).then(resolve);
+                    };
+                });
+            }
+            
+            // 备用方法: 使用HTTP请求
+            async testWithHTTP(address) {
+                return new Promise((resolve) => {
+                    const startTime = performance.now();
+                    
+                    // 尝试连接80端口（HTTP）
+                    const xhr = new XMLHttpRequest();
+                    xhr.timeout = 3000;
+                    
+                    xhr.onload = xhr.onerror = () => {
+                        const latency = Math.round(performance.now() - startTime);
+                        resolve(latency > 3000 ? -1 : latency);
+                    };
+                    
+                    xhr.ontimeout = () => {
+                        resolve(-1);
+                    };
+                    
+                    try {
+                        // 尝试连接，但不要实际发送请求（避免CORS）
+                        xhr.open('HEAD', `http://${address}/`, true);
+                        xhr.send();
+                    } catch (e) {
+                        // 如果失败，使用Image对象方法
+                        this.testWithImage(address).then(resolve);
+                    }
+                });
+            }
+            
+            // 第三种方法: 使用Image对象（最兼容）
+            async testWithImage(address) {
+                return new Promise((resolve) => {
+                    const startTime = performance.now();
+                    const img = new Image();
+                    
+                    const timeout = setTimeout(() => {
+                        img.src = '';
+                        resolve(-1);
+                    }, 3000);
+                    
+                    img.onload = img.onerror = () => {
+                        clearTimeout(timeout);
+                        const latency = Math.round(performance.now() - startTime);
+                        resolve(latency);
+                    };
+                    
+                    // 使用一个几乎不存在的图片，我们只关心连接时间
+                    img.src = `http://${address}/favicon.ico?t=${Date.now()}`;
+                });
+            }
+            
+            async testSingleNode(type) {
+                if (this.isTestingSingle) {
+                    this.log('已有测试在进行中', 'warning');
+                    return;
+                }
+                
+                this.isTestingSingle = true;
+                const address = this.config.selectedNodes[type];
+                
+                if (!address || address === 'custom' || address === 'add') {
+                    this.log(`请先选择有效的${type === 'mainland' ? '大陆' : '台湾'}节点`, 'warning');
+                    this.isTestingSingle = false;
+                    return;
+                }
+                
+                this.log(`开始测试${type === 'mainland' ? '大陆' : '台湾'}节点: ${address}`, 'info');
+                
+                try {
+                    this.updateProgress(30);
+                    const latency = await this.testLatency(address, type);
+                    
+                    // 更新UI
+                    this.updateNodeResult(type, latency, address);
+                    this.updateProgress(100);
+                    
+                    if (latency > 0) {
+                        this.log(`${type === 'mainland' ? '大陆' : '台湾'}节点测试成功: ${latency}ms`, 'success');
+                    } else {
+                        this.log(`${type === 'mainland' ? '大陆' : '台湾'}节点连接超时`, 'error');
+                    }
+                    
+                } catch (error) {
+                    this.log(`测试失败: ${error.message}`, 'error');
+                    this.updateNodeResult(type, -1, address);
+                } finally {
+                    this.isTestingSingle = false;
+                    setTimeout(() => this.updateProgress(0), 1000);
+                }
+            }
+            
+            async runFullTest() {
+                if (!this.config.userLocation) {
+                    this.log('请先选择您的所在地', 'warning');
+                    document.getElementById('userLocation').focus();
+                    return;
+                }
+                
+                if (this.isTestingSingle) {
+                    this.log('已有测试在进行中', 'warning');
+                    return;
+                }
+                
+                this.isTestingSingle = true;
+                this.log('开始完整测试...', 'info');
+                
+                try {
+                    this.updateProgress(20);
+                    
+                    // 测试大陆节点
+                    const mainlandAddress = this.config.selectedNodes.mainland;
+                    let mainlandLatency = -1;
+                    
+                    if (mainlandAddress && mainlandAddress !== 'custom' && mainlandAddress !== 'add') {
+                        mainlandLatency = await this.testLatency(mainlandAddress, 'mainland');
+                        this.updateNodeResult('mainland', mainlandLatency, mainlandAddress);
+                    }
+                    
+                    this.updateProgress(60);
+                    
+                    // 测试台湾节点
+                    const taiwanAddress = this.config.selectedNodes.taiwan;
+                    let taiwanLatency = -1;
+                    
+                    if (taiwanAddress && taiwanAddress !== 'custom' && taiwanAddress !== 'add') {
+                        taiwanLatency = await this.testLatency(taiwanAddress, 'taiwan');
+                        this.updateNodeResult('taiwan', taiwanLatency, taiwanAddress);
+                    }
+                    
+                    this.updateProgress(90);
+                    
+                    // 保存记录
+                    if ((mainlandAddress && mainlandAddress !== 'custom' && mainlandAddress !== 'add') || 
+                        (taiwanAddress && taiwanAddress !== 'custom' && taiwanAddress !== 'add')) {
+                        
+                        const record = {
+                            timestamp: new Date().toISOString(),
+                            userLocation: this.config.userLocation,
+                            mainland: {
+                                address: mainlandAddress,
+                                latency: mainlandLatency,
+                                status: mainlandLatency > 0 ? 'success' : mainlandLatency === -1 ? 'timeout' : 'error'
+                            },
+                            taiwan: {
+                                address: taiwanAddress,
+                                latency: taiwanLatency,
+                                status: taiwanLatency > 0 ? 'success' : taiwanLatency === -1 ? 'timeout' : 'error'
+                            }
+                        };
+                        
+                        this.config.history.unshift(record);
+                        
+                        // 限制历史记录数量
+                        if (this.config.history.length > 1000) {
+                            this.config.history = this.config.history.slice(0, 1000);
+                        }
+                        
+                        this.saveData();
+                        this.calculateStatistics();
+                        this.updateHistoryTable();
+                        this.updateChart();
+                        
+                        this.updateProgress(100);
+                        this.log('测试完成并保存', 'success');
+                    }
+                    
+                } catch (error) {
+                    this.log('测试失败: ' + error.message, 'error');
+                } finally {
+                    this.isTestingSingle = false;
+                    setTimeout(() => this.updateProgress(0), 1000);
+                }
+            }
+            
+            updateNodeResult(type, latency, address) {
+                const latencyElement = document.getElementById(`${type}Latency`);
+                const statusElement = document.getElementById(`${type}Status`);
+                const cardElement = document.getElementById(`${type}Card`);
+                
+                if (latency > 0) {
+                    latencyElement.textContent = `${latency}ms`;
+                    
+                    // 根据延迟设置颜色
+                    if (latency < 50) {
+                        latencyElement.className = 'latency good';
+                        statusElement.textContent = `优秀 (${address})`;
+                        statusElement.style.color = '#38a169';
+                    } else if (latency < 150) {
+                        latencyElement.className = 'latency good';
+                        statusElement.textContent = `良好 (${address})`;
+                        statusElement.style.color = '#38a169';
+                    } else if (latency < 300) {
+                        latencyElement.className = 'latency medium';
+                        statusElement.textContent = `一般 (${address})`;
+                        statusElement.style.color = '#d69e2e';
+                    } else {
+                        latencyElement.className = 'latency poor';
+                        statusElement.textContent = `较差 (${address})`;
+                        statusElement.style.color = '#e53e3e';
+                    }
+                } else {
+                    latencyElement.textContent = '超时';
+                    latencyElement.className = 'latency poor';
+                    statusElement.textContent = `连接失败 (${address})`;
+                    statusElement.style.color = '#e53e3e';
+                }
+            }
+            
+            updateProgress(percent) {
+                document.getElementById('progressBar').style.width = percent + '%';
+            }
+            
+            startAutoTest() {
+                if (!this.config.userLocation) {
+                    this.log('请先选择您的所在地', 'warning');
+                    return;
+                }
+                
+                this.config.isTesting = true;
+                this.updateStatus();
+                this.log(`开始自动测试，频率: ${this.config.testFrequency}秒`, 'success');
+                
+                // 立即运行一次测试
+                this.runFullTest();
+                
+                // 设置定时器
+                if (this.config.testInterval) {
+                    clearInterval(this.config.testInterval);
+                }
+                
+                this.config.testInterval = setInterval(() => {
+                    this.runFullTest();
+                }, this.config.testFrequency * 1000);
+                
+                // 设置自动保存
+                this.setupAutoSave();
+                
+                // 更新下次测试时间
+                this.updateNextTestTime();
+            }
+            
+            stopAutoTest() {
+                this.config.isTesting = false;
+                
+                if (this.config.testInterval) {
+                    clearInterval(this.config.testInterval);
+                    this.config.testInterval = null;
+                }
+                
+                if (this.config.saveInterval) {
+                    clearInterval(this.config.saveInterval);
+                    this.config.saveInterval = null;
+                }
+                
+                this.updateStatus();
+                this.log('自动测试已停止', 'warning');
+            }
+            
+            restartAutoTest() {
+                if (this.config.isTesting) {
+                    this.stopAutoTest();
+                    setTimeout(() => this.startAutoTest(), 100);
+                }
+            }
+            
+            setupAutoSave() {
+                if (this.config.saveInterval) {
+                    clearInterval(this.config.saveInterval);
+                }
+                
+                if (this.config.autoSave > 0) {
+                    this.config.saveInterval = setInterval(() => {
+                        this.exportData(true); // 静默导出
+                    }, this.config.autoSave * 1000);
+                    
+                    this.log(`自动保存已启用，频率: ${this.config.autoSave}秒`, 'info');
+                }
+            }
+            
+            updateStatus() {
+                const dot = document.getElementById('statusDot');
+                const text = document.getElementById('statusText');
+                const startBtn = document.getElementById('startBtn');
+                const stopBtn = document.getElementById('stopBtn');
+                
+                if (this.config.isTesting) {
+                    dot.classList.add('active');
+                    text.textContent = `测试中 (${this.config.testFrequency}秒/次)`;
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                } else {
+                    dot.classList.remove('active');
+                    text.textContent = '已停止';
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                }
+            }
+            
+            updateNextTestTime() {
+                if (this.config.isTesting) {
+                    const now = new Date();
+                    const next = new Date(now.getTime() + this.config.testFrequency * 1000);
+                    document.getElementById('nextTest').textContent = 
+                        `下次: ${next.getHours()}:${next.getMinutes().toString().padStart(2, '0')}`;
+                } else {
+                    document.getElementById('nextTest').textContent = '下次: -';
+                }
+                
+                if (this.config.history.length > 0) {
+                    const last = new Date(this.config.history[0].timestamp);
+                    document.getElementById('lastTest').textContent = 
+                        `上次: ${last.getHours()}:${last.getMinutes().toString().padStart(2, '0')}`;
+                }
+            }
+            
+            calculateStatistics() {
+                const history = this.config.history;
+                if (history.length === 0) return;
+                
+                let totalTests = history.length;
+                let successfulTests = 0;
+                let mainlandTotal = 0;
+                let taiwanTotal = 0;
+                let mainlandCount = 0;
+                let taiwanCount = 0;
+                let mainlandBest = 9999;
+                let taiwanBest = 9999;
+                
+                history.forEach(record => {
+                    if (record.mainland && record.mainland.latency > 0) {
+                        successfulTests++;
+                        mainlandTotal += record.mainland.latency;
+                        mainlandCount++;
+                        if (record.mainland.latency < mainlandBest) {
+                            mainlandBest = record.mainland.latency;
+                        }
+                    }
+                    if (record.taiwan && record.taiwan.latency > 0) {
+                        taiwanTotal += record.taiwan.latency;
+                        taiwanCount++;
+                        if (record.taiwan.latency < taiwanBest) {
+                            taiwanBest = record.taiwan.latency;
+                        }
+                    }
+                });
+                
+                this.config.statistics = {
+                    totalTests: totalTests,
+                    successfulTests: successfulTests,
+                    mainlandAvg: mainlandCount > 0 ? Math.round(mainlandTotal / mainlandCount) : 0,
+                    taiwanAvg: taiwanCount > 0 ? Math.round(taiwanTotal / taiwanCount) : 0,
+                    mainlandBest: mainlandBest === 9999 ? 0 : mainlandBest,
+                    taiwanBest: taiwanBest === 9999 ? 0 : taiwanBest
+                };
+                
+                // 更新UI
+                document.getElementById('totalTests').textContent = totalTests;
+                document.getElementById('successRate').textContent = 
+                    totalTests > 0 ? Math.round((successfulTests / totalTests) * 100) + '%' : '100%';
+                document.getElementById('avgMainland').textContent = 
+                    this.config.statistics.mainlandAvg > 0 ? this.config.statistics.mainlandAvg + ' ms' : '-- ms';
+                document.getElementById('avgTaiwan').textContent = 
+                    this.config.statistics.taiwanAvg > 0 ? this.config.statistics.taiwanAvg + ' ms' : '-- ms';
+                document.getElementById('bestMainland').textContent = 
+                    this.config.statistics.mainlandBest > 0 ? this.config.statistics.mainlandBest + ' ms' : '-- ms';
+                document.getElementById('bestTaiwan').textContent = 
+                    this.config.statistics.taiwanBest > 0 ? this.config.statistics.taiwanBest + ' ms' : '-- ms';
+            }
+            
+            updateUI() {
+                this.updateStatus();
+                this.calculateStatistics();
+                this.updateHistoryTable();
+                this.updateNextTestTime();
+            }
+            
+            updateHistoryTable() {
+                const tbody = document.getElementById('historyBody');
+                const recentHistory = this.config.history.slice(0, 50);
+                
+                if (recentHistory.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #a0aec0;">暂无测试记录</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = recentHistory.map(record => {
+                    const time = new Date(record.timestamp);
+                    const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
+                    
+                    const mainlandLatency = record.mainland?.latency || -1;
+                    const taiwanLatency = record.taiwan?.latency || -1;
+                    
+                    const mainlandColor = mainlandLatency > 0 ? 
+                        (mainlandLatency < 100 ? '#38a169' : mainlandLatency < 300 ? '#d69e2e' : '#e53e3e') : '#e53e3e';
+                    
+                    const taiwanColor = taiwanLatency > 0 ? 
+                        (taiwanLatency < 100 ? '#38a169' : taiwanLatency < 300 ? '#d69e2e' : '#e53e3e') : '#e53e3e';
+                    
+                    const statusIcon = mainlandLatency > 0 && taiwanLatency > 0 ? '✅' :
+                                     mainlandLatency > 0 || taiwanLatency > 0 ? '⚠️' : '❌';
+                    
+                    return `
+                        <tr>
+                            <td>${timeStr}</td>
+                            <td>${record.mainland?.address || '--'}</td>
+                            <td style="color: ${mainlandColor}; font-weight: 600;">
+                                ${mainlandLatency > 0 ? mainlandLatency + ' ms' : '超时'}
+                            </td>
+                            <td>${record.taiwan?.address || '--'}</td>
+                            <td style="color: ${taiwanColor}; font-weight: 600;">
+                                ${taiwanLatency > 0 ? taiwanLatency + ' ms' : '超时'}
+                            </td>
+                            <td>${statusIcon}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            initChart() {
+                const ctx = document.getElementById('latencyChart').getContext('2d');
+                this.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: '大陆延迟',
+                                data: [],
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 3,
+                                pointHoverRadius: 6
+                            },
+                            {
+                                label: '台湾延迟',
+                                data: [],
+                                borderColor: '#ed64a6',
+                                backgroundColor: 'rgba(237, 100, 166, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 3,
+                                pointHoverRadius: 6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { 
+                                position: 'top',
+                                labels: { font: { size: 12 } }
+                            },
+                            tooltip: { 
+                                mode: 'index', 
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw}ms`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                display: true, 
+                                title: { 
+                                    display: true, 
+                                    text: '时间',
+                                    font: { size: 12 }
+                                },
+                                ticks: { font: { size: 11 } }
+                            },
+                            y: { 
+                                display: true, 
+                                title: { 
+                                    display: true, 
+                                    text: '延迟 (ms)',
+                                    font: { size: 12 }
+                                },
+                                beginAtZero: true,
+                                ticks: { font: { size: 11 } }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            updateChart() {
+                const recentHistory = this.config.history.slice(0, 30).reverse();
+                const labels = recentHistory.map(record => {
+                    const time = new Date(record.timestamp);
+                    return `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
+                });
+                
+                const mainlandData = recentHistory.map(record => record.mainland?.latency || 0);
+                const taiwanData = recentHistory.map(record => record.taiwan?.latency || 0);
+                
+                this.chart.data.labels = labels;
+                this.chart.data.datasets[0].data = mainlandData;
+                this.chart.data.datasets[1].data = taiwanData;
+                this.chart.update();
+            }
+            
+            exportData(silent = false) {
+                const data = {
+                    config: this.config,
+                    history: this.config.history,
+                    statistics: this.config.statistics,
+                    exportTime: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `latency-data-${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                if (!silent) {
+                    this.log('数据已导出', 'success');
+                }
+            }
+            
+            showModal(modalId) {
+                if (modalId === 'nodesModal') {
+                    this.renderNodesModal();
+                }
+                document.getElementById(modalId).style.display = 'flex';
+            }
+            
+            renderNodesModal() {
+                const mainlandList = document.getElementById('mainlandNodesList');
+                const taiwanList = document.getElementById('taiwanNodesList');
+                
+                mainlandList.innerHTML = '';
+                taiwanList.innerHTML = '';
+                
+                // 渲染预设大陆节点
+                this.config.nodes.mainland.forEach((node, index) => {
+                    const nodeItem = document.createElement('div');
+                    nodeItem.className = 'node-item';
+                    nodeItem.innerHTML = `
+                        <div class="node-info">
+                            <div class="node-name">${node.name}</div>
+                            <div class="node-address">${node.address} - ${node.location}</div>
+                        </div>
+                        <div class="node-actions">
+                            <button onclick="monitor.selectNodeInModal('mainland', '${node.address}')" 
+                                    style="background: #48bb78;">选择</button>
+                        </div>
+                    `;
+                    mainlandList.appendChild(nodeItem);
+                });
+                
+                // 渲染自定义大陆节点
+                this.config.customNodes.mainland.forEach((node, index) => {
+                    const nodeItem = document.createElement('div');
+                    nodeItem.className = 'node-item';
+                    nodeItem.innerHTML = `
+                        <div class="node-info">
+                            <div class="node-name">${node.name} [自定义]</div>
+                            <div class="node-address">${node.address} - ${node.location || '未指定'}</div>
+                        </div>
+                        <div class="node-actions">
+                            <button onclick="monitor.selectNodeInModal('mainland', '${node.address}')" 
+                                    style="background: #48bb78;">选择</button>
+                            <button onclick="monitor.deleteCustomNode('mainland', ${index})" 
+                                    style="background: #f56565;">删除</button>
+                        </div>
+                    `;
+                    mainlandList.appendChild(nodeItem);
+                });
+                
+                // 渲染预设台湾节点
+                this.config.nodes.taiwan.forEach((node, index) => {
+                    const nodeItem = document.createElement('div');
+                    nodeItem.className = 'node-item';
+                    nodeItem.innerHTML = `
+                        <div class="node-info">
+                            <div class="node-name">${node.name}</div>
+                            <div class="node-address">${node.address} - ${node.location}</div>
+                        </div>
+                        <div class="node-actions">
+                            <button onclick="monitor.selectNodeInModal('taiwan', '${node.address}')" 
+                                    style="background: #48bb78;">选择</button>
+                        </div>
+                    `;
+                    taiwanList.appendChild(nodeItem);
+                });
+                
+                // 渲染自定义台湾节点
+                this.config.customNodes.taiwan.forEach((node, index) => {
+                    const nodeItem = document.createElement('div');
+                    nodeItem.className = 'node-item';
+                    nodeItem.innerHTML = `
+                        <div class="node-info">
+                            <div class="node-name">${node.name} [自定义]</div>
+                            <div class="node-address">${node.address} - ${node.location || '未指定'}</div>
+                        </div>
+                        <div class="node-actions">
+                            <button onclick="monitor.selectNodeInModal('taiwan', '${node.address}')" 
+                                    style="background: #48bb78;">选择</button>
+                            <button onclick="monitor.deleteCustomNode('taiwan', ${index})" 
+                                    style="background: #f56565;">删除</button>
+                        </div>
+                    `;
+                    taiwanList.appendChild(nodeItem);
+                });
+            }
+            
+            selectNodeInModal(type, address) {
+                this.config.selectedNodes[type] = address;
+                this.saveData();
+                this.renderNodeSelectors();
+                this.closeModal();
+                this.log(`已选择${type === 'mainland' ? '大陆' : '台湾'}节点: ${address}`, 'success');
+            }
+            
+            deleteCustomNode(type, index) {
+                if (confirm('确定要删除这个自定义节点吗？')) {
+                    this.config.customNodes[type].splice(index, 1);
+                    this.saveData();
+                    this.renderNodesModal();
+                    this.renderNodeSelectors();
+                    this.log(`已删除${type === 'mainland' ? '大陆' : '台湾'}自定义节点`, 'warning');
+                }
+            }
+            
+            saveCustomNode(type) {
+                const inputId = `${type}CustomInput`;
+                const address = document.getElementById(inputId).value.trim();
+                
+                if (!address) {
+                    this.log('请输入节点地址', 'warning');
+                    return;
+                }
+                
+                // 验证地址格式
+                if (!this.validateAddress(address)) {
+                    this.log('请输入有效的IP地址或域名', 'error');
+                    return;
+                }
+                
+                // 添加到自定义节点列表
+                const newNode = {
+                    name: `自定义${type === 'mainland' ? '大陆' : '台湾'}节点`,
+                    address: address,
+                    location: '自定义',
+                    type: 'custom'
+                };
+                
+                this.config.customNodes[type].push(newNode);
+                this.config.selectedNodes[type] = address;
+                
+                this.saveData();
+                this.renderNodeSelectors();
+                
+                // 隐藏自定义输入框并重置选择器
+                document.getElementById(`${type}Custom`).style.display = 'none';
+                document.getElementById(`${type}NodeSelect`).value = address;
+                
+                this.log(`已添加自定义${type === 'mainland' ? '大陆' : '台湾'}节点: ${address}`, 'success');
+            }
+            
+            addNewNode() {
+                const type = document.getElementById('newNodeType').value;
+                const name = document.getElementById('newNodeName').value.trim();
+                const address = document.getElementById('newNodeAddress').value.trim();
+                const location = document.getElementById('newNodeLocation').value.trim();
+                
+                if (!name || !address) {
+                    this.log('请填写节点名称和地址', 'warning');
+                    return;
+                }
+                
+                if (!this.validateAddress(address)) {
+                    this.log('请输入有效的IP地址或域名', 'error');
+                    return;
+                }
+                
+                const newNode = {
+                    name: name,
+                    address: address,
+                    location: location || '未指定',
+                    type: 'custom'
+                };
+                
+                this.config.customNodes[type].push(newNode);
+                this.saveData();
+                this.renderNodesModal();
+                this.renderNodeSelectors();
+                
+                // 清空表单
+                document.getElementById('newNodeName').value = '';
+                document.getElementById('newNodeAddress').value = '';
+                document.getElementById('newNodeLocation').value = '';
+                
+                this.log(`已添加${type === 'mainland' ? '大陆' : '台湾'}节点: ${name} (${address})`, 'success');
+            }
+            
+            validateAddress(address) {
+                // 简单的IP地址验证
+                const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+                // 简单的域名验证
+                const domainPattern = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/;
+                
+                return ipPattern.test(address) || domainPattern.test(address);
+            }
+            
+            async importData() {
+                const fileInput = document.getElementById('fileInput');
+                const files = fileInput.files;
+                
+                if (files.length === 0) {
+                    this.log('请选择要导入的文件', 'warning');
+                    return;
+                }
+                
+                let importedCount = 0;
+                let duplicateCount = 0;
+                
+                for (const file of files) {
+                    try {
+                        const text = await this.readFile(file);
+                        const data = JSON.parse(text);
+                        
+                        if (data.history && Array.isArray(data.history)) {
+                            // 去重处理
+                            const existingTimestamps = new Set(this.config.history.map(h => h.timestamp));
+                            
+                            data.history.forEach(record => {
+                                if (!existingTimestamps.has(record.timestamp)) {
+                                    this.config.history.unshift(record);
+                                    existingTimestamps.add(record.timestamp);
+                                    importedCount++;
+                                } else {
+                                    duplicateCount++;
+                                }
+                            });
+                            
+                            // 限制历史记录数量
+                            if (this.config.history.length > 1000) {
+                                this.config.history = this.config.history.slice(0, 1000);
+                            }
+                        }
+                    } catch (error) {
+                        this.log(`导入文件失败: ${file.name}`, 'error');
+                    }
+                }
+                
+                this.saveData();
+                this.updateUI();
+                this.updateChart();
+                this.closeModal();
+                fileInput.value = '';
+                
+                this.log(`导入完成: 新增 ${importedCount} 条记录，过滤 ${duplicateCount} 条重复`, 'success');
+            }
+            
+            readFile(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error('读取文件失败'));
+                    reader.readAsText(file);
+                });
+            }
+            
+            closeModal() {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+                
+                // 重置自定义输入框
+                document.getElementById('mainlandCustom').style.display = 'none';
+                document.getElementById('taiwanCustom').style.display = 'none';
+                document.getElementById('mainlandCustomInput').value = '';
+                document.getElementById('taiwanCustomInput').value = '';
+            }
+            
+            clearHistory() {
+                if (confirm('确定要清空所有历史记录吗？此操作不可撤销！')) {
+                    this.config.history = [];
+                    this.saveData();
+                    this.updateUI();
+                    this.updateChart();
+                    this.log('历史记录已清空', 'warning');
+                }
+            }
+            
+            clearLogs() {
+                document.getElementById('logContainer').innerHTML = 
+                    '<div class="log-entry"><span class="log-time">[系统]</span><span class="log-message log-info">日志已清空</span></div>';
+            }
+            
+            log(message, type = 'info') {
+                const container = document.getElementById('logContainer');
+                const time = new Date();
+                const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
+                
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <span class="log-time">[${timeStr}]</span>
+                    <span class="log-message log-${type}">${message}</span>
+                `;
+                
+                container.appendChild(entry);
+                container.scrollTop = container.scrollHeight;
+                
+                // 限制日志数量
+                const entries = container.querySelectorAll('.log-entry');
+                if (entries.length > 100) {
+                    entries[0].remove();
+                }
+            }
         }
         
-        function showNotification(message, type) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = 'notification ' + type;
-            notification.classList.add('show');
+        // 全局函数
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            setTimeout(function() {
-                notification.classList.remove('show');
-            }, 5000);
+            document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            if (tabId === 'chart' && monitor.chart) {
+                monitor.updateChart();
+            }
         }
+        
+        function switchModalTab(tabId) {
+            document.querySelectorAll('#nodesModal .tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('#nodesModal .tab-content').forEach(content => content.classList.remove('active'));
+            
+            const tabElement = document.querySelector(`[onclick="switchModalTab('${tabId}')"]`);
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
+            document.getElementById(tabId).classList.add('active');
+        }
+        
+        function testSingleNode(type) {
+            monitor.testSingleNode(type);
+        }
+        
+        function saveCustomNode(type) {
+            monitor.saveCustomNode(type);
+        }
+        
+        function importData() {
+            monitor.importData();
+        }
+        
+        function closeModal() {
+            monitor.closeModal();
+        }
+        
+        function clearHistory() {
+            monitor.clearHistory();
+        }
+        
+        function clearLogs() {
+            monitor.clearLogs();
+        }
+        
+        // 初始化监控器
+        const monitor = new LatencyMonitor();
+        
+        // 全局导出
+        window.monitor = monitor;
+        window.testSingleNode = testSingleNode;
+        window.saveCustomNode = saveCustomNode;
+        window.importData = importData;
+        window.closeModal = closeModal;
+        window.clearHistory = clearHistory;
+        window.clearLogs = clearLogs;
+        window.showTab = showTab;
+        window.switchModalTab = switchModalTab;
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 页面可见性变化
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    monitor.updateUI();
+                }
+            });
+        });
     </script>
 </body>
 </html>
